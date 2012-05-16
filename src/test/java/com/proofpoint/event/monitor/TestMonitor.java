@@ -2,7 +2,7 @@ package com.proofpoint.event.monitor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.proofpoint.event.monitor.executors.SerialScheduledExecutorService;
+import com.proofpoint.event.monitor.test.SerialScheduledExecutorService;
 import com.proofpoint.units.Duration;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
@@ -11,6 +11,7 @@ import org.testng.collections.Maps;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertEquals;
 
@@ -38,7 +39,7 @@ public class TestMonitor
         eventStore.setEventExists(true);
 
         monitor.start();
-        executorService.elapseTime(Duration.valueOf("5s"));
+        executorService.elapseTime(5, TimeUnit.SECONDS);
 
         assertEquals(alerter.getList(monitor.getName()), ImmutableList.of());
     }
@@ -51,7 +52,7 @@ public class TestMonitor
         eventStore.setEventExists(false);
 
         monitor.start();
-        executorService.elapseTime(Duration.valueOf("5s"));
+        executorService.elapseTime(5, TimeUnit.SECONDS);
 
         assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false));
     }
@@ -63,8 +64,8 @@ public class TestMonitor
         eventStore.setEventExists(false);
 
         monitor.start();
-        executorService.elapseTime(Duration.valueOf("5s"));
-        executorService.elapseTime(Duration.valueOf("30s"));
+        executorService.elapseTime(5, TimeUnit.SECONDS);
+        executorService.elapseTime(30, TimeUnit.SECONDS);
 
         assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false));
     }
@@ -78,15 +79,39 @@ public class TestMonitor
         eventStore.setEventExists(false);
 
         monitor.start();
-        executorService.elapseTime(Duration.valueOf("5s"));
+        executorService.elapseTime(5, TimeUnit.SECONDS);
 
         // Should have detected the failure
         assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false));
 
         eventStore.setEventExists(true);
-        executorService.elapseTime(Duration.valueOf("30s"));
+        executorService.elapseTime(30, TimeUnit.SECONDS);
 
         assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false, true));
+    }
+
+    @Test
+    public void testStopMonitor()
+            throws Exception
+    {
+        // Initial failure
+        eventStore.setEventExists(false);
+
+        monitor.start();
+        executorService.elapseTime(5, TimeUnit.SECONDS);
+
+        // Should have detected the failure
+        assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false));
+
+        // Stop the monitor before the monitored event recovers
+        monitor.stop();
+
+        // Recover the event
+        eventStore.setEventExists(true);
+        executorService.elapseTime(30, TimeUnit.SECONDS);
+
+        // Monitor should not have alerted the recovery
+        assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false));
     }
 
     private class DummyEventStore

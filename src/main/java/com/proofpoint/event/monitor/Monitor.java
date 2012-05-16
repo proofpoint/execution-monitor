@@ -102,7 +102,6 @@ public class Monitor
         return maxAgeInMinutes;
     }
 
-
     @Managed(description = "Is this monitor in the failed state?")
     public boolean isFailed()
     {
@@ -115,7 +114,7 @@ public class Monitor
         return eventType;
     }
 
-    @Managed(description = "Filter on the events being monitored")
+    @Managed(description = "Filter on the event being monitored")
     public String getEventFilter()
     {
         return eventPredicate.getEventFilter();

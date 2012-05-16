@@ -62,7 +62,6 @@ public class S3EventStore implements EventStore
                                 return true;
                             }
                         }
-
                     }
                     catch (IOException e) {
                         log.warn(e, "Exception while checking S3 object %s for recent event of type %s (filter %s)", eventFile, eventType, filter);
