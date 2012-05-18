@@ -1,0 +1,7 @@
+{
+    "testMonitor" : {
+        "eventType" : "Blackhole",
+        "eventFilter" : "entity.startsWith('A')",
+        "maxAge" : "100d"
+    }
+}

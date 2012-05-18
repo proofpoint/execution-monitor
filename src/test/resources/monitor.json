@@ -1,0 +1,14 @@
+{
+    "foo" : {
+        "eventType" : "foo",
+        "eventFilter" : "bar",
+        "maxAge" : "1m"
+    },
+
+    "baz" : {
+        "eventType" : "baz",
+        "eventFilter" : "bat",
+        "maxAge" : "2d",
+        "checkInterval" : "1h"
+    }
+}
