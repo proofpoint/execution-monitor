@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.proofpoint.event</groupId>
     <artifactId>execution-monitor</artifactId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
     <name>execution-monitor</name>
 
     <parent>
