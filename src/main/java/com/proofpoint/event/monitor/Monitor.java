@@ -29,6 +29,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.lang.String.format;
 import static org.joda.time.DateTime.now;
 
 public class Monitor
@@ -75,7 +76,15 @@ public class Monitor
                 @Override
                 public void run()
                 {
-                    checkState();
+                    try {
+                        checkState();
+                    }
+                    catch (Exception e) {
+                        failed(format("Caught exception while checking state: %s", e.getMessage()));
+                    }
+                    catch (Throwable t) {
+                        System.exit(1);
+                    }
                 }
             }, 5, (long) checkInterval.convertTo(TimeUnit.SECONDS), TimeUnit.SECONDS);
         }

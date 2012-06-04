@@ -16,6 +16,7 @@
 package com.proofpoint.event.monitor.s3;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.Closeables;
 import com.proofpoint.event.monitor.Event;
 import com.proofpoint.event.monitor.EventPredicate;
 import com.proofpoint.event.monitor.EventStore;
@@ -69,8 +70,10 @@ public class S3EventStore implements EventStore
                 }
 
                 for (URI eventFile : storageSystem.listObjects(hourBaseUri)) {
+                    InputStream s3Object = null;
                     try {
-                        Iterator<Event> eventIterator = getEventIterator(storageSystem.getInputSupplier(eventFile).getInput(), objectMapper);
+                        s3Object = storageSystem.getInputSupplier(eventFile).getInput();
+                        Iterator<Event> eventIterator = getEventIterator(s3Object, objectMapper);
                         while (eventIterator.hasNext()) {
                             Event event = eventIterator.next();
                             if (filter.apply(event) && event.getTimestamp().isAfter(limit)) {
@@ -80,6 +83,9 @@ public class S3EventStore implements EventStore
                     }
                     catch (IOException e) {
                         log.warn(e, "Exception while checking S3 object %s for recent event of type %s (filter %s)", eventFile, eventType, filter);
+                    }
+                    finally {
+                        Closeables.closeQuietly(s3Object);
                     }
                 }
             }

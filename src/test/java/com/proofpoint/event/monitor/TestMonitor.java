@@ -129,10 +129,33 @@ public class TestMonitor
         assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false));
     }
 
+    @Test
+    public void testHandlesExceptionsInMonitorTask()
+            throws Exception
+    {
+        eventStore.setEventExists(true);
+        eventStore.setFail(true);
+        monitor.start();
+        executorService.elapseTime(5, TimeUnit.SECONDS);
+
+        assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false));
+
+        eventStore.setFail(false);
+        executorService.elapseTime(30, TimeUnit.SECONDS);
+
+        assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false, true));
+    }
+
     private class DummyEventStore
         implements EventStore
     {
+        private boolean fail = false;
         private boolean eventExists = false;
+
+        public void setFail(boolean fail)
+        {
+            this.fail = fail;
+        }
 
         public void setEventExists(boolean eventExists)
         {
@@ -142,6 +165,9 @@ public class TestMonitor
         @Override
         public boolean recentEventExists(String eventType, EventPredicate eventPredicate, DateTime searchLimit)
         {
+            if (fail) {
+                throw new RuntimeException("Deliberate");
+            }
             return eventExists;
         }
     }
