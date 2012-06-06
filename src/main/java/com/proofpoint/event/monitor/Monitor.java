@@ -44,6 +44,7 @@ public class Monitor
     private final EventStore eventStore;
     private final Alerter alerter;
     private final AtomicBoolean failed = new AtomicBoolean();
+    private volatile DateTime lastChecked;
     private ScheduledFuture<?> scheduledFuture;
 
     public Monitor(String name, String eventType, EventPredicate eventPredicate, Duration maxAge, Duration checkInterval, ScheduledExecutorService executor, EventStore eventStore, Alerter alerter)
@@ -129,6 +130,17 @@ public class Monitor
         return eventPredicate.getEventFilter();
     }
 
+    @Managed(description = "Last time the check was run")
+    public String getLastCheckedAsString()
+    {
+        return lastChecked.toString();
+    }
+
+    public DateTime getLastChecked()
+    {
+        return lastChecked;
+    }
+
     @Managed
     public void checkState()
     {
@@ -142,6 +154,7 @@ public class Monitor
         else {
             failed(String.format("Expected to have seen an event since %s (%s minutes ago), but have not", oldestGoodDateTime, maxAgeInMinutes));
         }
+        lastChecked = startTime;
     }
 
     private void failed(String description)

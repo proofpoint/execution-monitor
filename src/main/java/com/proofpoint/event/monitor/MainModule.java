@@ -42,6 +42,8 @@ public class MainModule
         bindConfig(binder).to(AmazonEmailAlerterConfig.class);
         binder.bind(Alerter.class).to(AmazonEmailAlerter.class).in(Scopes.SINGLETON);
 
+        binder.bind(MonitorsResource.class).in(Scopes.SINGLETON);
+
         bindConfig(binder).to(MonitorConfig.class);
         jsonCodecBinder(binder).bindMapJsonCodec(String.class, MonitorJson.class);
         binder.bind(MonitorLoader.class).in(Scopes.SINGLETON);
