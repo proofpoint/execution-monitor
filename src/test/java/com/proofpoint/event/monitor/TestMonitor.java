@@ -16,16 +16,13 @@
 package com.proofpoint.event.monitor;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import com.proofpoint.event.monitor.test.DummyEventStore;
+import com.proofpoint.event.monitor.test.InMemoryAlerter;
 import com.proofpoint.event.monitor.test.SerialScheduledExecutorService;
 import com.proofpoint.units.Duration;
-import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.collections.Maps;
 
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertEquals;
@@ -146,57 +143,4 @@ public class TestMonitor
         assertEquals(alerter.getList(monitor.getName()), ImmutableList.of(false, true));
     }
 
-    private class DummyEventStore
-        implements EventStore
-    {
-        private boolean fail = false;
-        private boolean eventExists = false;
-
-        public void setFail(boolean fail)
-        {
-            this.fail = fail;
-        }
-
-        public void setEventExists(boolean eventExists)
-        {
-            this.eventExists = eventExists;
-        }
-
-        @Override
-        public boolean recentEventExists(String eventType, EventPredicate eventPredicate, DateTime searchLimit)
-        {
-            if (fail) {
-                throw new RuntimeException("Deliberate");
-            }
-            return eventExists;
-        }
-    }
-
-    private class InMemoryAlerter
-        implements Alerter
-    {
-        private final Map<String, List<Boolean>> alerts = Maps.newHashMap();
-
-        public List<Boolean> getList(String monitorName)
-        {
-            List<Boolean> list = alerts.get(monitorName);
-            if (list == null) {
-                list = Lists.newArrayList();
-                alerts.put(monitorName, list);
-            }
-            return list;
-        }
-
-        @Override
-        public void failed(Monitor monitor, String description)
-        {
-            getList(monitor.getName()).add(false);
-        }
-
-        @Override
-        public void recovered(Monitor monitor, String description)
-        {
-            getList(monitor.getName()).add(true);
-        }
-    }
 }
