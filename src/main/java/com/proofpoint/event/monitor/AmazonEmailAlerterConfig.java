@@ -17,14 +17,14 @@ package com.proofpoint.event.monitor;
 
 import com.proofpoint.configuration.Config;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.AssertTrue;
 
 public class AmazonEmailAlerterConfig
 {
+    private boolean alertingEnabled = true;
     private String toAddress = null;
     private String fromAddress = null;
 
-    @NotNull
     public String getFromAddress()
     {
         return fromAddress;
@@ -37,7 +37,6 @@ public class AmazonEmailAlerterConfig
         return this;
     }
 
-    @NotNull
     public String getToAddress()
     {
         return toAddress;
@@ -48,5 +47,23 @@ public class AmazonEmailAlerterConfig
     {
         this.toAddress = toAddress;
         return this;
+    }
+
+    public boolean isAlertingEnabled()
+    {
+        return alertingEnabled;
+    }
+
+    @Config("execution-monitor.alerts.enabled")
+    public AmazonEmailAlerterConfig setAlertingEnabled(boolean alertingEnabled)
+    {
+        this.alertingEnabled = alertingEnabled;
+        return this;
+    }
+
+    @AssertTrue(message = "If AWS alerting is enabled, to- and from- addresses are required")
+    public boolean isValid()
+    {
+        return !alertingEnabled || (fromAddress != null && toAddress != null);
     }
 }
